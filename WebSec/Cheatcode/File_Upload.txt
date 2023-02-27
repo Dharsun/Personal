@@ -1,0 +1,33 @@
+File Upload 
+
+Try to change Content-Type to allowed content-type 
+Changing upload directory via filename LFI for execution | URL encode the ../
+Web shell upload via extension blacklist bypass 
+    1. Try to find which server it is apache or php
+    2. In case, if it is apache upload .htaccess with below payload
+                AddType application/x-httpd-php .shell
+    3. Now upload your PHP file with .shell extension to execute a PHP file. 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Bypass file extension 
+  1. Double extension 
+  2. Reverse extension 
+  3. . after file extension ex: shell.php.
+  4. URL encode the . 
+  5. Use null byte or ;  | ex: file.php%00.png%00.jpg
+  6. xC0 xAE or xC0 x2E, xC4 xAE which converted as . 
+  7. Use Enviroimental variables 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Flawed validation of the file's contents | Use Magic bytes ex: JPEG files always begin with the bytes FF D8 FF 
+Use Exittool to add payload as metadata
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Exploiting file upload race conditions | Use Turbo intruder
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+How to prevent file upload vulnerabilities
+
+Allowing users to upload files is commonplace and doesn't have to be dangerous as long as you take the right precautions. In general, the most effective way to protect your own websites from these vulnerabilities is to implement all of the following practices: 
+
+1. Check the file extension against a whitelist of permitted extensions rather than a blacklist of prohibited ones. It's much easier to guess which extensions you might want to allow than it is to guess which ones an attacker might try to upload. 
+2. Make sure the filename doesn't contain any substrings that may be interpreted as a directory or a traversal sequence (../). 
+3. Rename uploaded files to avoid collisions that may cause existing files to be overwritten. 
+4. Do not upload files to the server's permanent filesystem until they have been fully validated. 
+5. As much as possible, use an established framework for preprocessing file uploads rather than attempting to write your own validation mechanisms. 
